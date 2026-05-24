@@ -7,12 +7,22 @@ import jayChouLyrics from '@/data/lyrics/jay-chou.json';
 import khalilFongLyrics from '@/data/lyrics/khalil-fong.json';
 import stefanieSunLyrics from '@/data/lyrics/stefanie-sun.json';
 import xueZhiQianLyrics from '@/data/lyrics/xuezhiqian.json';
+import jjLinLyrics from '@/data/lyrics/jj-lin.json';
+import leehomWangLyrics from '@/data/lyrics/leehom-wang.json';
+import gemTangLyrics from '@/data/lyrics/gem-tang.json';
+import easonChanLyrics from '@/data/lyrics/eason-chan.json';
+import davidTaoLyrics from '@/data/lyrics/david-tao.json';
 
 const LYRICS_MAP: Record<string, Song[]> = {
   'jay-chou': jayChouLyrics as Song[],
   'khalil-fong': khalilFongLyrics as Song[],
   'stefanie-sun': stefanieSunLyrics as Song[],
   'xuezhiqian': xueZhiQianLyrics as Song[],
+  'jj-lin': jjLinLyrics as Song[],
+  'leehom-wang': leehomWangLyrics as Song[],
+  'gem-tang': gemTangLyrics as Song[],
+  'eason-chan': easonChanLyrics as Song[],
+  'david-tao': davidTaoLyrics as Song[],
 };
 
 interface Artist {

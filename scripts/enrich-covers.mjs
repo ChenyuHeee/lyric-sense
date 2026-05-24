@@ -16,7 +16,7 @@ if (!ARTIST_SLUG || !ARTIST_NAME) {
 
 async function fetchCover(artist, album) {
   const term = encodeURIComponent(`${artist} ${album}`);
-  const url = `${ITUNES_API}?term=${term}&entity=album&limit=3&country=cn`;
+  const url = `${ITUNES_API}?term=${term}&entity=album&limit=5&country=us`;
   try {
     const res = await fetch(url);
     const data = await res.json();

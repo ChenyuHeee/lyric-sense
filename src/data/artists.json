@@ -1,26 +1,11 @@
 [
-  {
-    "slug": "jay-chou",
-    "name": "周杰伦",
-    "neteaseId": 6452,
-    "color": "#d4a853"
-  },
-  {
-    "slug": "khalil-fong",
-    "name": "方大同",
-    "neteaseId": 7763,
-    "color": "#8b4513"
-  },
-  {
-    "slug": "stefanie-sun",
-    "name": "孙燕姿",
-    "neteaseId": 7270,
-    "color": "#4a90d9"
-  },
-  {
-    "slug": "xuezhiqian",
-    "name": "薛之谦",
-    "neteaseId": 5781,
-    "color": "#6b4c9a"
-  }
+  { "slug": "jay-chou", "name": "周杰伦", "neteaseId": 6452, "color": "#d4a853" },
+  { "slug": "khalil-fong", "name": "方大同", "neteaseId": 2738, "color": "#8b4513" },
+  { "slug": "stefanie-sun", "name": "孙燕姿", "neteaseId": 9272, "color": "#4a90d9" },
+  { "slug": "xuezhiqian", "name": "薛之谦", "neteaseId": 5781, "color": "#6b4c9a" },
+  { "slug": "jj-lin", "name": "林俊杰", "neteaseId": 3684, "color": "#3b82f6" },
+  { "slug": "leehom-wang", "name": "王力宏", "neteaseId": 5346, "color": "#ef4444" },
+  { "slug": "gem-tang", "name": "邓紫棋", "neteaseId": 7763, "color": "#a855f7" },
+  { "slug": "eason-chan", "name": "陈奕迅", "neteaseId": 2116, "color": "#22c55e" },
+  { "slug": "david-tao", "name": "陶喆", "neteaseId": 5196, "color": "#f97316" }
 ]
