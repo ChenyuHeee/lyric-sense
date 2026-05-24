@@ -46,7 +46,7 @@ function lineQuality(line: string): number {
 }
 
 export function extractTopLines(songs: Song[], topN: number = 36): LineEntry[] {
-  const lineMap = new Map<string, { count: number; songs: Set<string> }>();
+  const lineMap = new Map<string, { count: number; songs: Set<string>; perSong: Map<string, number> }>();
 
   for (const song of songs) {
     for (const line of song.lines) {
@@ -59,8 +59,13 @@ export function extractTopLines(songs: Song[], topN: number = 36): LineEntry[] {
       if (/^[\d\s\-/.]+$/.test(trimmed)) continue;
       if (isFillerLine(trimmed)) continue;
 
-      const entry = lineMap.get(trimmed) || { count: 0, songs: new Set() };
-      entry.count++;
+      // Track per-song occurrence counts, cap at 3 per song
+      const entry = lineMap.get(trimmed) || { count: 0, songs: new Set(), perSong: new Map<string, number>() };
+      const inThisSong = entry.perSong.get(song.title) || 0;
+      if (inThisSong < 3) {
+        entry.count++;
+        entry.perSong.set(song.title, inThisSong + 1);
+      }
       entry.songs.add(song.title);
       lineMap.set(trimmed, entry);
     }
