@@ -4,9 +4,15 @@ import { useState, useCallback, useEffect } from 'react';
 import { searchByKeywords } from '@/lib/search';
 import artists from '@/data/artists.json';
 import jayChouLyrics from '@/data/lyrics/jay-chou.json';
+import khalilFongLyrics from '@/data/lyrics/khalil-fong.json';
+import stefanieSunLyrics from '@/data/lyrics/stefanie-sun.json';
+import xueZhiQianLyrics from '@/data/lyrics/xuezhiqian.json';
 
 const LYRICS_MAP: Record<string, Song[]> = {
   'jay-chou': jayChouLyrics as Song[],
+  'khalil-fong': khalilFongLyrics as Song[],
+  'stefanie-sun': stefanieSunLyrics as Song[],
+  'xuezhiqian': xueZhiQianLyrics as Song[],
 };
 
 interface Artist {

@@ -2,11 +2,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const DATA_DIR = path.resolve('data');
-const INPUT = path.join(DATA_DIR, 'lyrics-clean.json');
-const OUTPUT = path.join(DATA_DIR, 'lyrics-enriched.json');
+const ARTISTS_DIR = path.join(DATA_DIR, 'artists');
 
-// iTunes Search API (free, no auth needed)
 const ITUNES_API = 'https://itunes.apple.com/search';
+
+const ARTIST_SLUG = process.argv[2];
+const ARTIST_NAME = process.argv[3];
+
+if (!ARTIST_SLUG || !ARTIST_NAME) {
+  console.error('Usage: node enrich-covers.mjs <slug> <artist_name>');
+  process.exit(1);
+}
 
 async function fetchCover(artist, album) {
   const term = encodeURIComponent(`${artist} ${album}`);
@@ -15,10 +21,9 @@ async function fetchCover(artist, album) {
     const res = await fetch(url);
     const data = await res.json();
     if (data.results?.length > 0) {
-      // Find best match (album name contains the search term)
       for (const r of data.results) {
         const cover = r.artworkUrl100?.replace('100x100bb', '600x600bb');
-        if (cover) return { cover, artistName: r.artistName, collectionName: r.collectionName };
+        if (cover) return cover;
       }
     }
   } catch (e) {
@@ -28,51 +33,49 @@ async function fetchCover(artist, album) {
 }
 
 async function main() {
-  console.log('=== Enriching lyrics with album covers from iTunes ===\n');
+  console.log(`=== Enriching ${ARTIST_NAME} with album covers ===\n`);
 
-  const songs = JSON.parse(fs.readFileSync(INPUT, 'utf-8'));
-  console.log(`Loading ${songs.length} songs...`);
+  const inputFile = path.join(ARTISTS_DIR, `${ARTIST_SLUG}.json`);
 
-  // Get unique albums
-  const albumMap = new Map();
-  for (const s of songs) {
-    const key = s.album;
-    if (!albumMap.has(key)) albumMap.set(key, []);
-    albumMap.get(key).push(s);
+  if (!fs.existsSync(inputFile)) {
+    console.error(`File not found: ${inputFile}`);
+    process.exit(1);
   }
 
+  const songs = JSON.parse(fs.readFileSync(inputFile, 'utf-8'));
+  console.log(`Loading ${songs.length} songs...`);
+
+  const albumMap = new Map();
+  for (const s of songs) {
+    if (!albumMap.has(s.album)) albumMap.set(s.album, []);
+    albumMap.get(s.album).push(s);
+  }
   console.log(`${albumMap.size} unique albums\n`);
 
   const coverCache = {};
   let found = 0;
 
-  for (const [album, albumSongs] of albumMap) {
-    const artist = '周杰伦';
+  for (const [album] of albumMap) {
     console.log(`  Searching: ${album}...`);
-    const coverData = await fetchCover(artist, album);
-
-    if (coverData) {
-      coverCache[album] = coverData.cover;
+    const cover = await fetchCover(ARTIST_NAME, album);
+    if (cover) {
+      coverCache[album] = cover;
       found++;
-      console.log(`    ✓ ${coverData.collectionName}`);
+      console.log(`    ✓ found`);
     } else {
       console.log(`    ✗ not found`);
     }
-
-    // Rate limit
     await new Promise((r) => setTimeout(r, 300));
   }
 
-  // Enrich songs with covers
   const enriched = songs.map((s) => ({
     ...s,
-    artist: '周杰伦',
     coverUrl: coverCache[s.album] || null,
   }));
 
-  fs.writeFileSync(OUTPUT, JSON.stringify(enriched, null, 2), 'utf-8');
-  console.log(`\nDone! Covers found: ${found}/${albumMap.size}`);
-  console.log(`Saved to ${OUTPUT}`);
+  fs.writeFileSync(inputFile, JSON.stringify(enriched, null, 2), 'utf-8');
+  console.log(`\nCovers: ${found}/${albumMap.size}`);
+  console.log(`Saved to ${inputFile}`);
 }
 
 main().catch(console.error);
