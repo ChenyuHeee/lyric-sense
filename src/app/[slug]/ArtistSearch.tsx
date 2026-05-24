@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { searchByKeywords } from '@/lib/search';
 import { getArtist, getArtistSongs, type Song } from '@/lib/data';
 import artists from '@/data/artists.json';
+import WordCloud from './WordCloud';
 
 interface SearchResult {
   title: string;
@@ -179,10 +180,13 @@ export default function ArtistSearch({ slug }: { slug: string }) {
         </div>
       )}
 
+      {/* Word Cloud */}
+      <WordCloud slug={slug} visible={status === 'idle'} />
+
       {/* Empty */}
       {status === 'idle' && (
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] py-16 text-center">
-          <p className="text-sm text-zinc-500">
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] py-10 text-center">
+          <p className="text-sm text-zinc-600">
             试试「暗恋一个人不敢表白」「失去后的痛苦和不舍」...
           </p>
         </div>
