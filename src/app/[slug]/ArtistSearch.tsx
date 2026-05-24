@@ -328,7 +328,7 @@ async function generateTagline(query: string, topResults: SearchResult[]): Promi
         },
       ],
       temperature: 0.9,
-      max_tokens: 200,
+      max_tokens: 2000,
     }),
   });
 
