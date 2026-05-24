@@ -1,0 +1,26 @@
+[
+  {
+    "slug": "jay-chou",
+    "name": "周杰伦",
+    "neteaseId": 6452,
+    "color": "#d4a853"
+  },
+  {
+    "slug": "khalil-fong",
+    "name": "方大同",
+    "neteaseId": 7763,
+    "color": "#8b4513"
+  },
+  {
+    "slug": "stefanie-sun",
+    "name": "孙燕姿",
+    "neteaseId": 7270,
+    "color": "#4a90d9"
+  },
+  {
+    "slug": "xuezhiqian",
+    "name": "薛之谦",
+    "neteaseId": 5781,
+    "color": "#6b4c9a"
+  }
+]
