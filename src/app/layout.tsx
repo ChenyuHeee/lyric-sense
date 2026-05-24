@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import './globals.css';
+import NavBar from './NavBar';
 
 export const metadata: Metadata = {
   title: 'LyricSense — 歌词语义搜索',
@@ -17,15 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         {/* Top Nav */}
-        <header className="relative z-40 border-b border-white/[0.06]">
-          <div className="mx-auto max-w-7xl px-6 py-4">
-            <Link href="/" className="group inline-flex items-center gap-2">
-              <span className="font-serif text-xl font-bold tracking-tight text-[#e8e4df] transition-colors group-hover:text-amber-400">
-                LyricSense
-              </span>
-            </Link>
-          </div>
-        </header>
+        <NavBar />
 
         {children}
 

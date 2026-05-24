@@ -100,49 +100,43 @@ export default function ArtistSearch({ slug }: { slug: string }) {
       {/* Album Cover Strip */}
       <CoverStrip slug={slug} />
 
-      {/* Header */}
-      <div className="mb-8">
-        <div className="mb-6 flex flex-wrap items-baseline gap-x-6 gap-y-2">
-          <div className="flex items-baseline gap-3">
-            <select
-              value={selectedArtist}
-              onChange={(e) => setSelectedArtist(e.target.value)}
-              className="appearance-none bg-transparent font-serif text-3xl font-black text-[#e8e4df] outline-none cursor-pointer hover:text-amber-400 transition-colors"
-            >
-              {(artists as { slug: string; name: string }[]).map((a) => (
-                <option key={a.slug} value={a.slug} className="bg-[#1a1815] text-base">
-                  {a.name}
-                </option>
-              ))}
-            </select>
-            <svg className="h-4 w-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-          <span className="text-[13px] text-zinc-600">
-            {stats.songs} 首歌 &middot; {stats.albums} 张专辑 &middot; {stats.lines.toLocaleString()} 行歌词
-          </span>
-        </div>
-        <p className="text-[15px] leading-relaxed text-zinc-500">
-          用一句话描述你的心情，从 {artist.name} 的歌词中找到意境最契合的那一句
-        </p>
-      </div>
+      {/* Content area — relative for word cloud background */}
+      <div className="relative">
+        {/* Ambient word cloud behind content */}
+        <WordCloud slug={slug} visible={status === 'idle'} />
 
-      {/* Search */}
-      <div className="mb-10">
-        <div className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-4 shadow-lg transition-all focus-within:border-amber-500/30 focus-within:shadow-[0_0_40px_-10px_rgba(252,187,0,0.1)]">
-          <svg className="h-5 w-5 flex-shrink-0 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="输入你的心情、场景或感受..."
-            className="flex-1 bg-transparent text-[15px] text-[#e8e4df] placeholder:text-zinc-600 focus:outline-none"
-            autoFocus
-          />
+        {/* Stats + Switch */}
+        <div className="relative z-10 mb-4 flex items-center gap-4 text-[13px] text-zinc-600">
+          <span>{stats.songs} 首歌 &middot; {stats.albums} 张专辑 &middot; {stats.lines.toLocaleString()} 行歌词</span>
+          <span className="text-zinc-700">|</span>
+          <select
+            value={selectedArtist}
+            onChange={(e) => setSelectedArtist(e.target.value)}
+            className="appearance-none bg-transparent text-[13px] text-zinc-500 outline-none cursor-pointer hover:text-amber-400 transition-colors"
+          >
+            {(artists as { slug: string; name: string }[]).map((a) => (
+              <option key={a.slug} value={a.slug} className="bg-[#1a1815]">
+                {a.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Search */}
+        <div className="relative z-10 mb-10">
+          <div className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-[#0d0c0a]/80 backdrop-blur px-5 py-4 shadow-lg transition-all focus-within:border-amber-500/30 focus-within:shadow-[0_0_40px_-10px_rgba(252,187,0,0.1)]">
+            <svg className="h-5 w-5 flex-shrink-0 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="输入你的心情、场景或感受..."
+              className="flex-1 bg-transparent text-[15px] text-[#e8e4df] placeholder:text-zinc-600 focus:outline-none"
+              autoFocus
+            />
           <button
             onClick={search}
             disabled={status === 'loading' || !query.trim()}
@@ -184,17 +178,17 @@ export default function ArtistSearch({ slug }: { slug: string }) {
         </div>
       )}
 
-      {/* Word Cloud */}
-      <WordCloud slug={slug} visible={status === 'idle'} />
-
       {/* Empty */}
       {status === 'idle' && (
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] py-10 text-center">
+        <div className="relative z-10 rounded-2xl border border-white/[0.06] bg-[#0d0c0a]/70 backdrop-blur py-10 text-center">
           <p className="text-sm text-zinc-600">
             试试「暗恋一个人不敢表白」「失去后的痛苦和不舍」...
           </p>
         </div>
       )}
+
+      {/* Close relative wrapper */}
+      </div>
     </main>
   );
 }
