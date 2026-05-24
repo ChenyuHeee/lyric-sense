@@ -26,9 +26,6 @@ export default function NavBar() {
             </>
           )}
         </Link>
-        {!artist && (
-          <span className="text-[13px] text-zinc-500">华语歌词语义搜索</span>
-        )}
       </div>
     </header>
   );
