@@ -1,100 +1,95 @@
 import type { Song } from './data';
 
-// Common Chinese stop words
-const STOP_WORDS = new Set([
-  '我们', '他们', '她们', '自己', '什么', '怎么', '怎么样', '为什么',
-  '一个', '没有', '不是', '可以', '不会', '不能', '不要', '不会',
-  '只是', '还是', '就是', '已经', '因为', '所以', '但是', '然后',
-  '这个', '那个', '这些', '那些', '这里', '那里', '这样', '那样',
-  '真的', '知道', '看到', '觉得', '应该', '可能', '也许', '一直',
-  '一定', '一切', '一起', '一样', '不过', '而且', '如果', '虽然',
-  '但是', '可是', '所以', '因为', '或者', '还是', '只是', '就是',
-  '了', '的', '是', '在', '我', '你', '他', '她', '它', '们',
-  '着', '过', '去', '来', '到', '和', '与', '也', '都', '就',
-  '要', '会', '能', '把', '被', '让', '给', '对', '从', '向',
-  '那', '这', '很', '最', '更', '太', '好', '才', '又', '再',
-  '还', '想', '说', '看', '让', '用', '做', '走', '出', '有',
-  '上', '下', '里', '外', '中', '大', '小', '多', '少', '不',
-  '人', '天', '地', '心', '爱', '一', '只', '个', '些', '种',
-  '让', '让', '为', '以', '可', '所', '而', '却', '并', '或',
-  '及', '但', '吗', '吧', '呢', '啊', '嘛', '哦', '嗯', '呀',
-  '啦', '哎', '哈', '呵', '嗨', '喂', '哟', '噢', '喔',
-]);
-
-// Chinese punctuation and common single chars
-const SINGLE_SKIP = new Set([
-  '一', '二', '三', '是', '的', '了', '在', '和', '也', '都',
-  '就', '要', '会', '能', '不', '有', '人', '我', '你', '他',
-  '她', '它', '们', '这', '那', '很', '最', '更', '太', '好',
-  '才', '又', '再', '还', '想', '说', '看', '用', '做', '走',
-  '出', '上', '下', '里', '外', '中', '大', '小', '多', '少',
-  '把', '被', '让', '给', '对', '从', '向', '而', '却', '但',
-  '与', '或', '可', '所', '以', '为', '着', '过', '去', '来',
-]);
-
-interface WordEntry {
-  word: string;
+interface LineEntry {
+  line: string;
   count: number;
+  songCount: number; // how many different songs this line appears in
 }
 
-export function extractTopWords(songs: Song[], topN: number = 60): WordEntry[] {
-  const freq = new Map<string, number>();
+export interface WordCloudItem {
+  line: string;
+  size: number;
+  weight: number;
+  opacity: number;
+  rotate: number;
+}
+
+// Heuristic: score a line for "quotability" — the best lyrics are
+// complete thoughts, neither too short nor too long, and rich in content.
+function lineQuality(line: string): number {
+  const len = line.length;
+  // Prefer lines between 5 and 14 characters (Chinese)
+  if (len < 4 || len > 18) return 0;
+  // Sweet spot around 7-12 chars
+  const lenScore = len >= 6 && len <= 12 ? 1 : 0.6;
+  // Penalize lines starting/ending with common function words
+  const weakStart = /^(的|了|在|和|都|就|要|会|能|把|被|让|给|对|从|向|而|却|但|与|或|可|所|以|为|着|过|去|来|到|很|最|更|太|好|才|又|再|还|想|说|看|用|做|走|出|那|这|它|他|她|你|我|们)/.test(line);
+  const weakEnd = /(的|了|在|和|都|就|要|会|能|把|被|让|给|对|从|向|而|却|但|与|或|可|所|以|为|着|过|去|来|到|很|最|更|太|好|才|又|再|还|想|说|看|用|做|走)$/.test(line);
+  const structureScore = weakStart || weakEnd ? 0.5 : 1;
+  return lenScore * structureScore;
+}
+
+export function extractTopLines(songs: Song[], topN: number = 50): LineEntry[] {
+  const lineMap = new Map<string, { count: number; songs: Set<string> }>();
 
   for (const song of songs) {
+    const seen = new Set<string>();
     for (const line of song.lines) {
-      // Extract bigrams (2-char words) from Chinese text
-      for (let i = 0; i < line.length - 1; i++) {
-        const bigram = line.slice(i, i + 2);
-        // Keep only Chinese characters
-        if (/^[一-鿿]{2}$/.test(bigram) && !STOP_WORDS.has(bigram)) {
-          freq.set(bigram, (freq.get(bigram) || 0) + 1);
-        }
-      }
+      const trimmed = line.trim();
+      if (trimmed.length < 4 || trimmed.length > 18) continue;
+      if (trimmed.includes('：') || trimmed.includes(':')) continue;
+      if (/^(作曲|作词|编曲|制作|演唱|监制|混音|录音|和声|吉他|钢琴)/.test(trimmed)) continue;
 
-      // Also extract 3-char and 4-char words from the text
-      for (let i = 0; i < line.length - 2; i++) {
-        const trigram = line.slice(i, i + 3);
-        if (/^[一-鿿]{3}$/.test(trigram) && !STOP_WORDS.has(trigram)) {
-          freq.set(trigram, (freq.get(trigram) || 0) + 1);
-        }
-      }
+      const entry = lineMap.get(trimmed) || { count: 0, songs: new Set() };
+      entry.count++;
+      entry.songs.add(song.title);
+      lineMap.set(trimmed, entry);
     }
   }
 
-  // Sort by frequency, take top N
-  return [...freq.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, topN)
-    .map(([word, count]) => ({ word, count }));
+  // Score each line: frequency * quality * song diversity bonus
+  const scored = [...lineMap.entries()]
+    .map(([line, { count, songs }]) => ({
+      line,
+      count,
+      songCount: songs.size,
+      score: count * lineQuality(line) * (1 + songs.size * 0.3),
+    }))
+    .filter((s) => s.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  // Remove lines that are substrings of higher-scoring lines (keep the longer one)
+  const deduped: typeof scored = [];
+  for (const item of scored) {
+    const isDuplicate = deduped.some(
+      (d) => d.line !== item.line && (d.line.includes(item.line) || item.line.includes(d.line))
+    );
+    if (!isDuplicate) {
+      deduped.push(item);
+    }
+  }
+
+  return deduped.slice(0, topN).map(({ line, count, songCount }) => ({
+    line,
+    count,
+    songCount,
+  }));
 }
 
-export interface WordCloudItem extends WordEntry {
-  size: number;   // font size in rem
-  weight: number; // font weight (300-900)
-  opacity: number; // 0.3-1.0
-  rotate: number; // rotation in degrees
-  x: number;      // random horizontal offset percent
-  y: number;      // random vertical offset percent
-}
+export function generateWordCloud(lines: LineEntry[]): WordCloudItem[] {
+  if (lines.length === 0) return [];
 
-export function generateWordCloud(words: WordEntry[]): WordCloudItem[] {
-  if (words.length === 0) return [];
+  const maxCount = lines[0].count;
+  const minCount = lines[lines.length - 1].count;
 
-  const maxCount = words[0].count;
-  const minCount = words[words.length - 1].count;
-
-  return words.map((w) => {
-    // Normalize: 0 to 1
+  return lines.map((w) => {
     const norm = maxCount === minCount ? 0.5 : (w.count - minCount) / (maxCount - minCount);
-
     return {
-      ...w,
-      size: 0.7 + norm * 2.0,        // 0.7rem to 2.7rem
-      weight: 300 + Math.round(norm * 600), // 300 to 900
-      opacity: 0.35 + norm * 0.65,   // 0.35 to 1.0
-      rotate: (Math.random() - 0.5) * 20, // -10 to +10 degrees
-      x: Math.random() * 100,
-      y: Math.random() * 100,
+      line: w.line,
+      size: 0.75 + norm * 1.5,
+      weight: 300 + Math.round(norm * 600),
+      opacity: 0.4 + norm * 0.6,
+      rotate: (Math.random() - 0.5) * 15,
     };
   });
 }
