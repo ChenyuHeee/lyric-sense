@@ -76,6 +76,12 @@ export function extractTopLines(songs: Song[], topN: number = 40): LineEntry[] {
       if (trimmed.length < 5 || trimmed.length > 18) continue;
       if (trimmed.includes('：') || trimmed.includes(':')) continue;
       if (/^(作曲|作词|编曲|制作|演唱|监制|混音|录音|和声|吉他|钢琴|词|曲)/.test(trimmed)) continue;
+      // Instrumental / non-lyric content
+      if (/纯音乐|请欣赏|音乐赏析|音乐推荐|原声带|伴奏|演奏|纯乐器|背景音乐|音效/.test(trimmed)) continue;
+      // Production credits / copyright / metadata
+      if (/版权所有|翻版必究|工作室|广播电视台|文化传媒|新华社|主题歌音乐|工作团队|制作人|出品|发行|唱片|录音棚|录音室|混音师|编曲人|词曲|OP|SP|音乐集团|音乐产业|博物院|实验室|杜比|有限公司|组委会|主办|承办|协办|赞助|品牌|宣传|推广/.test(trimmed)) continue;
+      // Lines that are purely numbers/dates/catalog info
+      if (/^[\d\s\-/.]+$/.test(trimmed)) continue;
       if (isFillerLine(trimmed)) continue;
 
       const entry = lineMap.get(trimmed) || { count: 0, songs: new Set() };
