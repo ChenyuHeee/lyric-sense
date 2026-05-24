@@ -57,10 +57,10 @@ export default function ArtistSearch({ slug }: { slug: string }) {
       if (API_KEY) {
         res = await semanticSearch(query.trim(), songs);
       } else {
-        res = searchByKeywords(query.trim(), songs).map((r) => ({
-          ...r,
-          coverUrl: songs.find((s) => s.title === r.title)?.coverUrl || null,
-        }));
+        res = searchByKeywords(query.trim(), songs).map((r) => {
+          const originalSong = songs.find((s) => s.title === r.title);
+          return { ...r, coverUrl: originalSong?.coverUrl || null };
+        });
       }
       setResults(res);
       setStatus('done');
@@ -294,13 +294,15 @@ async function semanticSearch(query: string, songs: Song[]): Promise<SearchResul
   const matches = JSON.parse(jsonStr);
 
   return matches.map((m: any) => {
-    const song = pool[m.index] as Song | undefined;
+    const item = pool[m.index];
+    // Look up the original song to get the cover URL
+    const originalSong = songs.find((s) => s.title === item?.title);
     return {
-      title: song?.title || '未知',
-      album: song?.album || '',
-      lines: song?.lines || [],
-      fullText: song?.fullText || '',
-      coverUrl: song?.coverUrl || null,
+      title: item?.title || '未知',
+      album: item?.album || '',
+      lines: item?.lines || [],
+      fullText: item?.fullText || '',
+      coverUrl: originalSong?.coverUrl || null,
       mode: 'semantic' as const,
       reason: m.reason || '',
     };
