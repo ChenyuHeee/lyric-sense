@@ -13,8 +13,9 @@ export default function NavBar() {
     <header className="relative z-40 border-b border-white/[0.06]">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="group flex items-center gap-3">
-          <span className="font-serif text-lg font-bold tracking-tight text-[#e8e4df] transition-colors group-hover:text-amber-400">
-            LyricSense
+          <span className="font-serif text-lg font-bold tracking-tight">
+            <span className="text-amber-400 transition-colors">Lyric</span>
+            <span className="text-[#c9b88c] transition-colors">Sense</span>
           </span>
           {artist && (
             <>

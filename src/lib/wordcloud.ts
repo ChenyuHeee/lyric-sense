@@ -12,11 +12,9 @@ export interface WordCloudItem {
   weight: number;
   opacity: number;
   rotate: number;
-  x: number;
-  y: number;
   delay: number;
   duration: number;
-  tier: number; // 0=top (brightest), 1=mid, 2=low (dimmest)
+  tier: number;
 }
 
 function isFillerLine(line: string): boolean {
@@ -99,59 +97,30 @@ export function extractTopLines(songs: Song[], topN: number = 36): LineEntry[] {
   }));
 }
 
-// Generate positions using a spiral layout — brighter lines cluster near center,
-// dimmer lines spiral outward. Creates an organic galaxy/constellation feel.
+// Generate word cloud items with natural flex-wrap layout properties.
+// Items have varying sizes, weights, opacities and rotations — they fill
+// the container naturally via flex-wrap, avoiding overlap.
 export function generateWordCloud(lines: LineEntry[]): WordCloudItem[] {
   if (lines.length === 0) return [];
 
   const maxCount = lines[0].count;
   const minCount = lines[lines.length - 1].count;
 
-  // Sort by count descending — brightest first, placed near center
-  const sorted = [...lines].sort((a, b) => b.count - a.count);
+  return [...lines]
+    .sort(() => Math.random() - 0.5) // shuffle for organic placement
+    .map((w) => {
+      const norm = maxCount === minCount ? 0.5 : (w.count - minCount) / (maxCount - minCount);
+      const tier = norm > 0.55 ? 0 : norm > 0.2 ? 1 : 2;
 
-  // Golden angle spiral placement
-  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-  const centerX = 50;
-  const centerY = 50;
-
-  return sorted.map((w, i) => {
-    const norm = maxCount === minCount ? 0.5 : (w.count - minCount) / (maxCount - minCount);
-    const tier = norm > 0.6 ? 0 : norm > 0.25 ? 1 : 2;
-
-    // Even spiral from inner ring to outer edge, spreading items evenly
-    const minRadius = 8;
-    const maxRadius = 46;
-    const radiusBase = minRadius + (i / (sorted.length - 1)) * (maxRadius - minRadius);
-    // High-weight items get a very slight inward bias (max 6% closer to center)
-    const normBias = (1 - norm) * 6;
-    const radius = radiusBase + normBias;
-
-    const angle = i * goldenAngle;
-
-    // Wider jitter for edge items, tighter for center items
-    const jitterScale = 3 + (radius / maxRadius) * 10;
-    const jitterX = (Math.random() - 0.5) * jitterScale;
-    const jitterY = (Math.random() - 0.5) * jitterScale;
-
-    const x = centerX + Math.cos(angle) * radius + jitterX;
-    const y = centerY + Math.sin(angle) * radius + jitterY;
-
-    // Clamp to container, allowing more edge fill
-    const clampedX = Math.max(2, Math.min(94, x));
-    const clampedY = Math.max(3, Math.min(94, y));
-
-    return {
-      line: w.line,
-      size: 0.7 + norm * 1.4,
-      weight: 300 + Math.round(norm * 600),
-      opacity: 0.35 + norm * 0.65,
-      rotate: (Math.random() - 0.5) * 18,
-      x: Math.round(clampedX * 10) / 10,
-      y: Math.round(clampedY * 10) / 10,
-      delay: Math.random() * 0.5,
-      duration: 3 + Math.random() * 4,
-      tier,
-    };
-  });
+      return {
+        line: w.line,
+        size: 0.75 + norm * 1.3,
+        weight: 300 + Math.round(norm * 600),
+        opacity: 0.35 + norm * 0.65,
+        rotate: (Math.random() - 0.5) * 14,
+        delay: Math.random() * 0.6,
+        duration: 3.5 + Math.random() * 4,
+        tier,
+      };
+    });
 }
