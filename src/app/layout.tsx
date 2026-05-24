@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import './globals.css';
-import artists from '@/data/artists.json';
 
 export const metadata: Metadata = {
   title: 'LyricSense — 歌词语义搜索',
@@ -19,23 +18,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* Top Nav */}
         <header className="relative z-40 border-b border-white/[0.06]">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-            <Link href="/" className="group flex items-center gap-2">
+          <div className="mx-auto max-w-7xl px-6 py-4">
+            <Link href="/" className="group inline-flex items-center gap-2">
               <span className="font-serif text-xl font-bold tracking-tight text-[#e8e4df] transition-colors group-hover:text-amber-400">
                 LyricSense
               </span>
             </Link>
-            <nav className="hidden md:flex items-center gap-1">
-              {artists.map((a) => (
-                <Link
-                  key={a.slug}
-                  href={`/${a.slug}`}
-                  className="rounded-full px-3 py-1.5 text-[13px] text-zinc-500 transition-all hover:bg-white/[0.05] hover:text-zinc-300"
-                >
-                  {a.name}
-                </Link>
-              ))}
-            </nav>
           </div>
         </header>
 
