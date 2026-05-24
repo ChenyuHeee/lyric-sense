@@ -35,6 +35,7 @@ export default function ArtistSearch({ slug }: { slug: string }) {
   const [error, setError] = useState('');
   const [accentColor, setAccentColor] = useState(artist?.color || '#d4a853');
   const [selectedArtist, setSelectedArtist] = useState(slug);
+  const [tagline, setTagline] = useState('');
 
   useEffect(() => {
     if (!artist) router.push('/');
@@ -50,6 +51,7 @@ export default function ArtistSearch({ slug }: { slug: string }) {
     if (!query.trim() || songs.length === 0) return;
     setStatus('loading');
     setError('');
+    setTagline('');
     try {
       let res: SearchResult[];
       if (API_KEY) {
@@ -64,6 +66,12 @@ export default function ArtistSearch({ slug }: { slug: string }) {
       setStatus('done');
       if (res.length > 0 && res[0].coverUrl) {
         extractColor(res[0].coverUrl).then(setAccentColor);
+      }
+      // Generate tagline from top 3 results
+      if (API_KEY && res.length >= 2) {
+        generateTagline(query.trim(), res.slice(0, 3)).then(setTagline).catch(() => {});
+      } else {
+        setTagline('');
       }
     } catch (e: any) {
       setError(e.message);
@@ -149,11 +157,24 @@ export default function ArtistSearch({ slug }: { slug: string }) {
                 <p className="text-zinc-500">没有找到匹配的歌词，换个描述试试</p>
               </div>
             ) : (
-              <div className="space-y-3 pb-8">
-                {results.map((r, i) => (
-                  <ResultCard key={i} result={r} accentColor={accentColor} />
-                ))}
-              </div>
+              <>
+                <div className="space-y-3">
+                  {results.map((r, i) => (
+                    <ResultCard key={i} result={r} accentColor={accentColor} />
+                  ))}
+                </div>
+                {tagline && (
+                  <div className="mt-6 rounded-2xl border border-amber-500/15 bg-amber-500/[0.03] px-6 py-5 text-center">
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-500/60">
+                      为你生成
+                    </p>
+                    <p className="text-[15px] leading-relaxed italic text-amber-200/80">
+                      {tagline}
+                    </p>
+                  </div>
+                )}
+                <div className="pb-8" />
+              </>
             )}
           </div>
         )}
@@ -284,6 +305,36 @@ async function semanticSearch(query: string, songs: Song[]): Promise<SearchResul
       reason: m.reason || '',
     };
   });
+}
+
+async function generateTagline(query: string, topResults: SearchResult[]): Promise<string> {
+  const lines = topResults
+    .map((r) => r.lines.slice(0, 2).join(' '))
+    .join('\n');
+
+  const res = await fetch(`${BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: MODEL,
+      messages: [
+        {
+          role: 'system',
+          content: `你是文案高手。根据用户的心情描述和匹配到的歌词，生成一句网感文案（20-40字）。要求：有共鸣感、适合发朋友圈/小红书、自然不做作、融合歌词意境和用户心情。只返回文案本身，不要引号不要解释。`,
+        },
+        {
+          role: 'user',
+          content: `用户心情：${query}\n\n匹配歌词：\n${lines}\n\n请生成一句网感文案：`,
+        },
+      ],
+      temperature: 0.9,
+      max_tokens: 200,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || 'API error');
+  return data.choices?.[0]?.message?.content?.trim() || '';
 }
 
 function extractColor(url: string): Promise<string> {
