@@ -8,8 +8,9 @@ export default function Home() {
     <main className="relative z-10 mx-auto max-w-7xl px-6 py-16">
       {/* Hero */}
       <div className="mb-20 text-center animate-fade-in">
-        <h1 className="mb-4 font-serif text-[clamp(3rem,6vw,5rem)] font-black leading-none tracking-tight text-[#e8e4df]">
-          LyricSense
+        <h1 className="mb-4 font-serif text-[clamp(3rem,6vw,5rem)] font-black leading-none tracking-tight">
+          <span className="text-amber-400">Lyric</span>
+          <span className="text-[#c9b88c]">Sense</span>
         </h1>
         <p className="mx-auto max-w-lg text-lg leading-relaxed text-zinc-500">
           用一句话描述你的心情，<br className="hidden sm:block" />
