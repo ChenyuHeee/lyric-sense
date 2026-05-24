@@ -7,7 +7,7 @@ import { extractTopLines, generateWordCloud } from '@/lib/wordcloud';
 export default function WordCloud({ slug, visible }: { slug: string; visible: boolean }) {
   const lines = useMemo(() => {
     const songs = getArtistSongs(slug);
-    const top = extractTopLines(songs, 36);
+    const top = extractTopLines(songs, 30);
     return generateWordCloud(top);
   }, [slug]);
 
@@ -44,7 +44,7 @@ export default function WordCloud({ slug, visible }: { slug: string; visible: bo
       {/* Cloud container */}
       <div
         className="relative w-full"
-        style={{ paddingBottom: '85%' }}
+        style={{ paddingBottom: '100%' }}
       >
         {lines.map((item, i) => {
           const color = getColor(item.tier);

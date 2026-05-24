@@ -114,19 +114,27 @@ export function generateWordCloud(lines: LineEntry[]): WordCloudItem[] {
     const norm = maxCount === minCount ? 0.5 : (w.count - minCount) / (maxCount - minCount);
     const tier = norm > 0.6 ? 0 : norm > 0.25 ? 1 : 2;
 
-    // Spiral: radius increases with index, higher-weight items cluster nearer center
-    const radiusBase = (i / sorted.length) * 38 + (1 - norm) * 12;
+    // Even spiral from inner ring to outer edge, spreading items evenly
+    const minRadius = 8;
+    const maxRadius = 46;
+    const radiusBase = minRadius + (i / (sorted.length - 1)) * (maxRadius - minRadius);
+    // High-weight items get a very slight inward bias (max 6% closer to center)
+    const normBias = (1 - norm) * 6;
+    const radius = radiusBase + normBias;
+
     const angle = i * goldenAngle;
-    // Add jitter for organic feel
-    const jitterX = (Math.random() - 0.5) * 8;
-    const jitterY = (Math.random() - 0.5) * 8;
 
-    const x = centerX + Math.cos(angle) * radiusBase + jitterX;
-    const y = centerY + Math.sin(angle) * radiusBase + jitterY;
+    // Wider jitter for edge items, tighter for center items
+    const jitterScale = 3 + (radius / maxRadius) * 10;
+    const jitterX = (Math.random() - 0.5) * jitterScale;
+    const jitterY = (Math.random() - 0.5) * jitterScale;
 
-    // Clamp to container bounds (5-95%)
-    const clampedX = Math.max(3, Math.min(92, x));
-    const clampedY = Math.max(5, Math.min(92, y));
+    const x = centerX + Math.cos(angle) * radius + jitterX;
+    const y = centerY + Math.sin(angle) * radius + jitterY;
+
+    // Clamp to container, allowing more edge fill
+    const clampedX = Math.max(2, Math.min(94, x));
+    const clampedY = Math.max(3, Math.min(94, y));
 
     return {
       line: w.line,
