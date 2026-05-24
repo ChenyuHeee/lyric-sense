@@ -7,6 +7,7 @@ import { searchByKeywords } from '@/lib/search';
 import { getArtist, getArtistSongs, type Song } from '@/lib/data';
 import artists from '@/data/artists.json';
 import WordCloud from './WordCloud';
+import CoverStrip from './CoverStrip';
 
 interface SearchResult {
   title: string;
@@ -88,13 +89,16 @@ export default function ArtistSearch({ slug }: { slug: string }) {
       {/* Breadcrumb */}
       <Link
         href="/"
-        className="mb-8 inline-flex items-center gap-1.5 text-[13px] text-zinc-600 transition-colors hover:text-zinc-400"
+        className="mb-6 inline-flex items-center gap-1.5 text-[13px] text-zinc-600 transition-colors hover:text-zinc-400"
       >
         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
         全部歌手
       </Link>
+
+      {/* Album Cover Strip */}
+      <CoverStrip slug={slug} />
 
       {/* Header */}
       <div className="mb-8">
