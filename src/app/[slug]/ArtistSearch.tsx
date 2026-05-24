@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { searchByKeywords } from '@/lib/search';
 import { getArtist, getArtistSongs, type Song } from '@/lib/data';
 import artists from '@/data/artists.json';
@@ -85,28 +84,17 @@ export default function ArtistSearch({ slug }: { slug: string }) {
   };
 
   return (
-    <main className="relative z-10 mx-auto max-w-4xl px-6 py-12 animate-fade-in">
-      {/* Breadcrumb */}
-      <Link
-        href="/"
-        className="mb-6 inline-flex items-center gap-1.5 text-[13px] text-zinc-600 transition-colors hover:text-zinc-400"
-      >
-        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-        全部歌手
-      </Link>
-
+    <main className="relative z-10 mx-auto flex min-h-[calc(100vh-60px)] max-w-4xl flex-col px-6 pt-6 animate-fade-in">
       {/* Album Cover Strip */}
       <CoverStrip slug={slug} />
 
-      {/* Content area — relative for word cloud background */}
-      <div className="relative">
-        {/* Ambient word cloud behind content */}
+      {/* Expandable area: content at top, word cloud fills remaining space */}
+      <div className="relative flex flex-1 flex-col">
+        {/* Ambient word cloud — fills entire available space */}
         <WordCloud slug={slug} visible={status === 'idle'} />
 
         {/* Stats + Switch */}
-        <div className="relative z-10 mb-4 flex items-center gap-4 text-[13px] text-zinc-600">
+        <div className="relative z-10 mb-3 flex items-center gap-4 text-[13px] text-zinc-600">
           <span>{stats.songs} 首歌 &middot; {stats.albums} 张专辑 &middot; {stats.lines.toLocaleString()} 行歌词</span>
           <span className="text-zinc-700">|</span>
           <select
@@ -116,14 +104,14 @@ export default function ArtistSearch({ slug }: { slug: string }) {
           >
             {(artists as { slug: string; name: string }[]).map((a) => (
               <option key={a.slug} value={a.slug} className="bg-[#1a1815]">
-                {a.name}
+                切换歌手: {a.name}
               </option>
             ))}
           </select>
         </div>
 
         {/* Search */}
-        <div className="relative z-10 mb-10">
+        <div className="relative z-10 mb-6">
           <div className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-[#0d0c0a]/80 backdrop-blur px-5 py-4 shadow-lg transition-all focus-within:border-amber-500/30 focus-within:shadow-[0_0_40px_-10px_rgba(252,187,0,0.1)]">
             <svg className="h-5 w-5 flex-shrink-0 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -137,57 +125,53 @@ export default function ArtistSearch({ slug }: { slug: string }) {
               className="flex-1 bg-transparent text-[15px] text-[#e8e4df] placeholder:text-zinc-600 focus:outline-none"
               autoFocus
             />
-          <button
-            onClick={search}
-            disabled={status === 'loading' || !query.trim()}
-            className="rounded-xl px-5 py-2 text-[13px] font-semibold transition-all disabled:opacity-30"
-            style={{
-              background: status === 'loading' ? 'transparent' : accentColor,
-              color: status === 'loading' ? accentColor : '#0d0c0a',
-              border: status === 'loading' ? `1px solid ${accentColor}30` : '1px solid transparent',
-            }}
-          >
-            {status === 'loading' ? '匹配中...' : '搜索'}
-          </button>
+            <button
+              onClick={search}
+              disabled={status === 'loading' || !query.trim()}
+              className="rounded-xl px-5 py-2 text-[13px] font-semibold transition-all disabled:opacity-30"
+              style={{
+                background: status === 'loading' ? 'transparent' : accentColor,
+                color: status === 'loading' ? accentColor : '#0d0c0a',
+                border: status === 'loading' ? `1px solid ${accentColor}30` : '1px solid transparent',
+              }}
+            >
+              {status === 'loading' ? '匹配中...' : '搜索'}
+            </button>
+          </div>
+          {error && <p className="mt-3 text-sm text-red-400/80">{error}</p>}
         </div>
-        {error && <p className="mt-3 text-sm text-red-400/80">{error}</p>}
-      </div>
 
-      {/* Results */}
-      {status === 'done' && (
-        <div className="stagger">
-          {results.length === 0 ? (
-            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] py-16 text-center">
-              <p className="text-zinc-500">没有找到匹配的歌词，换个描述试试</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {results.map((r, i) => (
-                <ResultCard key={i} result={r} accentColor={accentColor} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+        {/* Results */}
+        {status === 'done' && (
+          <div className="relative z-10 stagger">
+            {results.length === 0 ? (
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] py-16 text-center">
+                <p className="text-zinc-500">没有找到匹配的歌词，换个描述试试</p>
+              </div>
+            ) : (
+              <div className="space-y-3 pb-8">
+                {results.map((r, i) => (
+                  <ResultCard key={i} result={r} accentColor={accentColor} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-      {/* Loading */}
-      {status === 'loading' && (
-        <div className="flex flex-col items-center gap-4 py-20">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/[0.08] border-t-amber-400" />
-          <p className="text-sm text-zinc-500">正在理解你的描述，匹配最合适的歌词...</p>
-        </div>
-      )}
+        {/* Loading */}
+        {status === 'loading' && (
+          <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-4">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/[0.08] border-t-amber-400" />
+            <p className="text-sm text-zinc-500">正在理解你的描述，匹配最合适的歌词...</p>
+          </div>
+        )}
 
-      {/* Empty */}
-      {status === 'idle' && (
-        <div className="relative z-10 rounded-2xl border border-white/[0.06] bg-[#0d0c0a]/70 backdrop-blur py-10 text-center">
-          <p className="text-sm text-zinc-600">
+        {/* Idle hint — compact, at bottom of search area */}
+        {status === 'idle' && (
+          <p className="relative z-10 text-center text-[13px] text-zinc-600">
             试试「暗恋一个人不敢表白」「失去后的痛苦和不舍」...
           </p>
-        </div>
-      )}
-
-      {/* Close relative wrapper */}
+        )}
       </div>
     </main>
   );

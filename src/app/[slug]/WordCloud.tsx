@@ -27,7 +27,7 @@ export default function WordCloud({ slug, visible }: { slug: string; visible: bo
 
       <div
         className="pointer-events-none absolute inset-0 z-0 overflow-hidden select-none"
-        style={{ minHeight: '500px' }}
+        style={{ minHeight: '400px' }}
       >
         {lines.map((item, i) => {
           const alpha = (item.opacity * 0.22).toFixed(2);
