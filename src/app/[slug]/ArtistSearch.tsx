@@ -189,7 +189,7 @@ function ResultCard({ result, accentColor }: { result: SearchResult; accentColor
             alt={result.album}
             className="h-full w-full object-cover"
             onError={() => setImgError(true)}
-            crossOrigin="anonymous"
+            referrerPolicy="no-referrer"
           />
         ) : (
           <div
